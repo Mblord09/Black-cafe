@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Cafe - Order Your Favorite Dishes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1607457070315-b4315a430f80');
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            background-position: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        h1, h3 {
+            color: #ffda79;
+        }
+        label {
+            font-size: 1.1em;
+            color: #ffda79;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"], button {
+            background-color: #ffda79;
+            color: #000;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover, button:hover {
+            background-color: #ffcc66;
+        }
+        #confirmation {
+            color: #ffda79;
+            font-weight: bold;
+        }
+        #logo {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffda79;
+        }
+        .flex-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .dish-image {
+            width: 100px;
+            height: auto;
+            margin: 10px;
+        }
+        #qrCode {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="welcomePage">
+        <div id="logo">Welcome to Black Cafe</div>
+        <h3>Order Your Favorite Dishes</h3>
+        <div class="flex-container">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4" alt="Dish 1" class="dish-image">
+            <img src="https://images.unsplash.com/photo-1499028344343-cd173ffc68a9" alt="Dish 2" class="dish-image">
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="Dish 3" class="dish-image">
+        </div>
+        <button id="enterButton">Enter</button>
+    </div>
+
+    <div class="container" id="orderSection" style="display: none;">
+        <h1>Place Your Order</h1>
+        <form id="orderForm">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+            <label for="time">Arrival Time (24hr format):</label>
+            <input type="time" id="time" name="time" required>
+
+            <label for="payment">Payment Mode:</label>
+            <select id="payment" name="payment" required>
+                <option value="Cash">Cash</option>
+                <option value="Online">Online</option>
+            </select>
+
+            <label for="dish">Choose Dishes and Quantity:</label>
+            <div id="dishSelection">
+                <label>
+                    <input type="checkbox" name="dish" value="Veg Masala Noodles"> Veg Masala Noodles
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Manchurian"> Manchurian (Dry/Gravy)
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Pasta"> Pasta (Tandoori/White)
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Paneer Tikka Skewers"> Paneer Tikka Skewers
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Chinese Bhel"> Chinese Bhel
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Veggie Delight Sandwich"> Veggie Delight Sandwich
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Nachos and Salsa"> Nachos and Salsa
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+                <label>
+                    <input type="checkbox" name="dish" value="Soup"> Soup
+                    <input type="number" name="qty" min="1" max="100" value="1">
+                </label><br>
+            </div>
+
+            <input type="submit" value="Send Order">
+        </form>
+        <button id="qrButton" style="display: none;">Create QR Code</button>
+        <div id="qrCode" style="display: none;"></div>
+        <p id="confirmation"></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle enter button click
+            $('#enterButton').click(function() {
+                $('#welcomePage').hide();
+                $('#orderSection').show();
+            });
+
+            // Handle form submission
+            $('#orderForm').submit(function(e) {
+                e.preventDefault();
+                
+                const name = $('#name').val();
+                const time = $('#time').val();
+                const payment = $('#payment').val();
+                const dishes = [];
+                const quantities = [];
+                
+                $('input[name="dish"]:checked').each(function() {
+                    dishes.push($(this).val());
+                    const qty = $(this).siblings('input[type="number"]').val();
+                    quantities.push(qty);
+                });
+
+                let orderDetails = `Name: ${name}\nArrival Time: ${time}\nPayment Mode: ${payment}\nDishes:\n`;
+                dishes.forEach((dish, index) => {
+                    orderDetails += `${dish} (Qty: ${quantities[index]})\n`;
+                });
+
+                // Mock email sending process
+                console.log(`Order sent to email: ${orderDetails}`);
+
+                // Show confirmation and QR code option
+                $('#confirmation').text("Order submitted! You can have a QR code now.And keep it with you to recive your order");
+                $('#qrButton').show();
+
+                // Handle QR code generation
+                $('#qrButton').off('click').on('click', function() {
+                    $('#qrCode').empty().qrcode({
+                        text: orderDetails,
+                        width: 128,
+                        height: 128
+                    });
+                    $('#qrCode').show();
+                    alert("Thank you for ordering from Black Cafe! We'll keep your food ready and hot as you.");
+                });
+            });
+        });
+    </script>
+</body>
+</html>
